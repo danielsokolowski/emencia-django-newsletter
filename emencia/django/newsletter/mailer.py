@@ -6,7 +6,7 @@ from random import sample
 from StringIO import StringIO
 from smtplib import SMTPRecipientsRefused
 from datetime import datetime
-
+import time
 try:
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
@@ -86,10 +86,12 @@ class Mailer(object):
             self.smtp_connect()
 
         self.attachments = self.build_attachments()
+        per_hour = self.newsletter.server.mails_hour
+        sleep_time = 60.0 * 60 / per_hour
 
         number_of_recipients = len(self.expedition_list)
         if self.verbose:
-            print '%i emails will be sent' % number_of_recipients
+            print '%i emails will be sent up to %s/hour at one every %s seconds.' % (number_of_recipients, per_hour, round(sleep_time, 2))
 
         i = 1
         for contact in self.expedition_list:
@@ -119,6 +121,7 @@ class Mailer(object):
                 self.smtp.quit()
                 self.smtp_connect()
             i += 1
+            time.sleep(sleep_time)
         self.smtp.quit()
         self.update_newsletter_status()
 
