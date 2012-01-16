@@ -30,6 +30,5 @@ if USE_WORKGROUPS:
 class LinkAdmin(admin.ModelAdmin):
     list_display = ('title', 'url', 'creation_date')
 
-if settings.DEBUG:
-    admin.site.register(Link, LinkAdmin)
-    admin.site.register(ContactMailingStatus)
+admin.site.register(Link, LinkAdmin)
+admin.site.register(ContactMailingStatus)
