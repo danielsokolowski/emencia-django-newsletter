@@ -1,5 +1,7 @@
 """Mailer for emencia.django.newsletter"""
 import re
+import sys
+import logging
 import time
 import mimetypes
 from random import sample
@@ -46,8 +48,7 @@ from emencia.django.newsletter.settings import \
 
 
 LINK_RE = re.compile(r"https?://([^ \n]+\n)+[^ \n]+", re.MULTILINE)
-
-
+logger = logging.getLogger('emencia.django.newsletter')
 def html2text(html):
     """Use html2text but repair newlines cutting urls.
     Need to use this hack until
@@ -96,8 +97,8 @@ class Mailer(object):
         i = 1
         for contact in self.expedition_list:
             if self.verbose:
-                print '- Processing %s/%s (%s)' % (
-                    i, number_of_recipients, contact.pk)
+                print '- Processing %s/%s (%s - %s)' % (
+                    i, number_of_recipients, contact.pk, contact)
 
             try:
                 message = self.build_message(contact)
@@ -111,6 +112,8 @@ class Mailer(object):
                 contact.valid = False
                 contact.save()
             except:
+                e = sys.exc_info()[1]
+                logger.error('Sending to %s failed: \n%s' % (contact, e))
                 status = ContactMailingStatus.ERROR
 
             ContactMailingStatus.objects.create(newsletter=self.newsletter,
