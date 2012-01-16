@@ -117,11 +117,13 @@ class Mailer(object):
                                                 contact=contact, status=status)
             if SLEEP_BETWEEN_SENDING:
                 time.sleep(SLEEP_BETWEEN_SENDING)
+            else:
+                time.sleep(sleep_time)
             if RESTART_CONNECTION_BETWEEN_SENDING:
                 self.smtp.quit()
                 self.smtp_connect()
             i += 1
-            time.sleep(sleep_time)
+
         self.smtp.quit()
         self.update_newsletter_status()
 
