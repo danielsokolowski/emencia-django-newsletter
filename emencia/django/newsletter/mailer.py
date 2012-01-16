@@ -95,6 +95,7 @@ class Mailer(object):
             print '%i emails will be sent up to %s/hour at one every %s seconds.' % (number_of_recipients, per_hour, round(sleep_time, 2))
 
         i = 1
+        critical_errors = 0
         for contact in self.expedition_list:
             if self.verbose:
                 print '- Processing %s/%s (%s - %s)' % (
@@ -115,9 +116,16 @@ class Mailer(object):
                 e = sys.exc_info()[1]
                 logger.error('Sending to %s failed: \n%s' % (contact, e))
                 status = ContactMailingStatus.ERROR
+                critical_errors += 1
 
             ContactMailingStatus.objects.create(newsletter=self.newsletter,
                                                 contact=contact, status=status)
+
+            # exit if to many critical erros
+            if critical_errors >= 3:
+                logger.error('Max 3 critical errors reached, aborting this batch and will attempt again on next cron call (if it was setup)')
+                break
+
             if SLEEP_BETWEEN_SENDING:
                 time.sleep(SLEEP_BETWEEN_SENDING)
             else:
